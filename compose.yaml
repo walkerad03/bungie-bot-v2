@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  bungie-bot:
+    build:
+      context: .
+      platform: linux/amd64
+    container_name: bungie-bot
+    environment:
+      - NODE_ENV=production

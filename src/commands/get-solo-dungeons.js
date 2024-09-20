@@ -21,7 +21,7 @@ module.exports = (destjs) => ({
             const nickname = member.nickname;
             const membership_details = await destjs.getMembershipDetailsFromBungieID(nickname);
     
-            const [{ membershipId: membership_id, membershipType: membership_type }] = membership_details
+            const [{ membershipId: membership_id, membershipType: membership_type }] = membership_details;
             const soloDungeons = await destjs.getSoloDungeonClears(membership_type, membership_id);
     
             const clearCounts = {};
@@ -48,12 +48,12 @@ module.exports = (destjs) => ({
 
             await interaction.editReply({ embeds: [embed] });
         } catch (error) {
-        logger.logError('Error executing get-solo-dungeons-clears command:', error);
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp('There was an error executing this command.');
-        } else {
-            await interaction.reply('There was an error executing this command.');
+            logger.logError('Error executing get-solo-dungeons-clears command:', error);
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp('There was an error executing this command.');
+            } else {
+                await interaction.reply('There was an error executing this command.');
+            }
         }
-    }
     }
 });

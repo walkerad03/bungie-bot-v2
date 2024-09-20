@@ -48,7 +48,7 @@ module.exports = () => ({
 
                 const player = createAudioPlayer();
 
-                const resource = createAudioResource(join(__dirname, '../audio_files/youve_been_hit_by.mp3'), {
+                const resource = createAudioResource(join(__dirname, '../audio_files/jungle.mp3'), {
                     metadata: {
                         title: "You've Been Hit By",
                     },
@@ -72,7 +72,7 @@ module.exports = () => ({
                 });
 
                 if (subscription) {
-                    setTimeout(() => subscription.unsubscribe(), 5_000);
+                    setTimeout(() => subscription.unsubscribe(), 100000_000);
                 }
             });
 

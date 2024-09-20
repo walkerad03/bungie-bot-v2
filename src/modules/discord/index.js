@@ -69,7 +69,7 @@ class Discord {
       const role = member.guild.roles.cache.find((r) => r.name === role_name);
 
       if (!role) {
-        logger.logWarn(`Role "${role_name}" not found.`);
+        logger.logWarn(`Role "${role_name}" not found. Coult not set role ${role_name} for ${member.nickname}.`);
         return;
       }
   
@@ -89,7 +89,7 @@ class Discord {
       const role = member.guild.roles.cache.find((r) => r.name === role_name);
 
       if (!role) {
-        logger.logWarn(`Role "${role_name}" not found.`);
+        logger.logWarn(`Role "${role_name}" not found. Could not remove role ${role_name} for ${member.nickname}.`);
         return;
       }
   

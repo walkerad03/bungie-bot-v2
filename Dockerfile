@@ -5,6 +5,7 @@ ENV NODE_ENV production
 WORKDIR /app
 
 COPY package*.json ./
+RUN npm i ffmpeg-static
 RUN npm install
 COPY . .
 

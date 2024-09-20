@@ -16,10 +16,20 @@ class API {
         const HEADERS = {'X-API-KEY': this.api_key};
         try {
             const response = await axios.get(url, {headers: HEADERS});
-            return response
+            return response;
         } catch (error) {
             logger.logError(`Could not send GET request to bungie API.`, error);
-            throw error
+            throw error;
+        }
+    }
+
+    async _getReqWithHeaders(url, headers) {
+        try {
+            const response = await axios.get(url, {headers: headers});
+            return response;
+        } catch (error) {
+            logger.logError(`Could not send GET request to bungie API.`, error);
+            throw error;
         }
     }
 
@@ -75,9 +85,24 @@ class API {
     }
 
     async GetActivityDefinition(director_activity_hash) {
-        return this._getRequest(
+        return await this._getRequest(
             `${DESTINY2_URL}Manifest/DestinyActivityDefinition/${director_activity_hash}`
         )
+    }
+
+    async getAggregateActivityStats(membership_type, membership_id, character_id) {
+        return await this._getRequest(
+            `${DESTINY2_URL}${membership_type}/Account/${membership_id}/Character/${character_id}/Stats/AggregateActivityStats/`
+        )
+    }
+
+    async getMembershipsForCurrentUser(oauth_access_token) {
+        const headers = {
+            'Authorization': `Bearer ${oauth_access_token}`,
+            'X-API-Key': this.api_key
+        };
+
+        return await this._getReqWithHeaders(`${USER_URL}GetMembershipsForCurrentUser/`, headers);
     }
 }
 

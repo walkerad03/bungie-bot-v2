@@ -1,9 +1,18 @@
-version: '3.8'
-
 services:
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "1"
+
   bungie-bot:
     image: bungie-bot-v2
     restart: "unless-stopped"
+    depends_on:
+      - postgres
     logging:
       options:
         max-size: "10m"

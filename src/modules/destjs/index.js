@@ -231,6 +231,7 @@ class DestJS {
 
     async updateChallengeRoles(discord, member) {
         const dungeonRoleMappings = {
+            "Solo Vesper's Host: Standard": "Solo VH",
             "Solo Warlord's Ruin: Standard": "Solo Warlords",
             "Solo Ghosts of the Deep: Standard": "Solo GotD",
             "Solo Spire of the Watcher: Standard": "Solo SotW",
@@ -240,6 +241,7 @@ class DestJS {
             "Solo Pit of Heresy: Standard": "Solo PoH",
             "Solo The Shattered Throne": "Solo Shattered Throne",
 
+            "SF Vesper's Host: Standard": "SF VH",
             "SF Warlord's Ruin: Standard": "SF Warlords",
             "SF Ghosts of the Deep: Standard": "SF GotD",
             "SF Spire of the Watcher: Standard": "SF SotW",
@@ -282,8 +284,12 @@ class DestJS {
         const nickname = member.nickname ?? member.user.username;
         const membershipDetails = await this.getMembershipDetailsFromBungieID(nickname);
 
-        
         if (!Array.isArray(membershipDetails) || membershipDetails.length === 0) {
+            logger.logWarn(`Membership details for ${member.nickname} are not formatted correctly`);
+            return;
+        }
+
+        if (membershipDetails.some(item => item.membershipId === null || item.membershipType === null)) {
             logger.logWarn(`No membership details found for ${member.nickname}`);
             return;
         }
@@ -330,13 +336,22 @@ class DestJS {
             }
         });
 
-        solo_dungeons = solo_dungeons.filter(item => {
+        let filtered_dungeons = [];
+
+        solo_dungeons.forEach(item => {
             if (item.activity_name.startsWith('SF ')) {
-                const soloVersion = item.activity_name.replace('Solo ', 'SF ');
-                return !solo_dungeons.some(i => i.activity_name === soloVersion);
+                filtered_dungeons.push(item);
+            } else if (item.activity_name.startsWith('Solo ')) {
+                const sfVersion = item.activity_name.replace('Solo ', 'SF ');
+                const sfExists = solo_dungeons.some(i => i.activity_name === sfVersion);
+
+                if (!sfExists) {
+                    filtered_dungeons.push(item);
+                }
             }
-            return true;
         });
+
+        solo_dungeons = filtered_dungeons;
 
         for (const key in dungeonRoleMappings) {
             if (dungeonRoleMappings.hasOwnProperty(key)) {

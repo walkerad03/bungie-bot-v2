@@ -62,9 +62,6 @@ async function scheduledTasks() {
     const guild = await discord.client.guilds.fetch(config.guildId);
     await guild.members.fetch();
     for (const member of guild.members.cache.values()) {
-        if (member.nickname == "Mitch#7658" || member.nickname == "shy#8600") {
-            continue;
-        }
         await processMember(member);
     }
     logger.logInfo("Completed scheduled tasks");

@@ -8,48 +8,87 @@ const GROUP_URL = 'https://www.bungie.net/Platform/GroupV2/'
 var logger = new Logger();
 
 class API {
-    constructor(api_key) {
-        this.api_key = api_key
+    constructor(api_key, max_attempts=3, timeout_delay_ms=1000) {
+        this.api_key = api_key;
+        this.max_attempts = max_attempts;
+        this.timeout_delay_ms = timeout_delay_ms;
     }
 
     async _getRequest(url) {
         const HEADERS = {'X-API-KEY': this.api_key};
         try {
-            const response = await axios.get(url, {headers: HEADERS});
-            return response;
+            for (let attempt = 0; attempt < this.max_attempts; attempt++) {
+                try {
+                    const response = await axios.get(url, {headers: HEADERS});
+                    return response;
+                } catch (error) {
+                    if (attempt === this.max_attempts - 1) throw error;
+                    logger.logError(`Attempt ${attempt + 1} failed for GET request to ${url}. Retrying...`);
+                    await new Promise(res => setTimeout(res, this.timeout_delay_ms));
+                }
+            }
         } catch (error) {
-            logger.logError(`Could not send GET request to bungie API.`, error);
-            throw error;
+            logger.logError(`Could not send GET request to ${url}: ${error}`);
+            return null;
         }
     }
 
     async _getReqWithHeaders(url, headers) {
         try {
-            const response = await axios.get(url, {headers: headers});
-            return response;
+            for (let attempt = 0; attempt < this.max_attempts; attempt++) {
+                try {
+                    const response = await axios.get(url, {headers: headers});
+                    return response;
+                } catch (error) {
+                    if (attempt === this.max_attempts - 1) throw error;
+                    logger.logError(`Attempt ${attempt + 1} failed for GET request with headers to ${url}. Retrying...`);
+                    await new Promise(res => setTimeout(res, this.timeout_delay_ms));
+                }
+            }
         } catch (error) {
-            logger.logError(`Could not send GET request to bungie API.`, error);
-            throw error;
+            logger.logError(`Could not send GET request with headers to ${url}: ${error}`);
+            return null;
         }
     }
 
     async _postRequest(url, data) {
         const HEADERS = {'X-API-KEY': this.api_key};
         try {
-            const response = await axios.post(url, data, {headers: HEADERS});
-            return response;
+            for (let attempt = 0; attempt < this.max_attempts; attempt++) {
+                try {
+                    const response = await axios.post(url, data, {headers: HEADERS});
+                    return response;
+                } catch (error) {
+                    if (attempt === this.max_attempts - 1) throw error;
+                    logger.logError(`Attempt ${attempt + 1} failed for POST request to ${url}. Retrying...`);
+                    await new Promise(res => setTimeout(res, this.timeout_delay_ms));
+                }
+            }
         } catch (error) {
-            logger.logError("Could not send POST request to bungie API.", error);
-            throw error;
+            logger.logError(`Could not send POST request to ${url}: ${error}`);
+            return null;
         }
     }
 
     async postGlobalName(display_name, page) {
         logger.logInfo(`Sending GlobalName POST Request for ${display_name} page ${page}`);
-        const json_data = {'displayNamePrefix': display_name};
-        return await this._postRequest(
-            `${USER_URL}Search/GlobalName/${page}/`,json_data
-        )
+        try {
+            for (let attempt = 0; attempt < this.max_attempts; attempt++) {
+                try {
+                    const json_data = {'displayNamePrefix': display_name};
+                    return await this._postRequest(
+                        `${USER_URL}Search/GlobalName/${page}/`,json_data
+                    );
+                } catch (error) {
+                    if (attempt === this.max_attempts - 1) throw error;
+                    logger.logError(`Attempt ${attempt + 1} failed for POST request to ${url}. Retrying...`);
+                    await new Promise(res => setTimeout(res, this.timeout_delay_ms));
+                }
+            }
+        } catch (error) {
+            logger.logError(`Could not get GlobalName for ${display_name}: ${error}`);
+            return null;
+        }
     }
 
     async getPGCR(activity_id) {

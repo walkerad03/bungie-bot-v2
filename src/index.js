@@ -48,6 +48,11 @@ async function login(discord, logger) {
 }
 
 async function processMember(member) {
+    if (member.user.bot) {
+        logger.logInfo(`Member ${member.user.username} is a bot. Skipping...`);
+        return;
+    }
+    
     if (!member.nickname) {
         logger.logWarn(`Member ${member} has no nickname`);
         return;
@@ -61,6 +66,7 @@ async function scheduledTasks() {
     logger.logInfo("Starting scheduled tasks");
     const guild = await discord.client.guilds.fetch(config.guildId);
     await guild.members.fetch();
+    console.log(guild.members.cache.values());
     for (const member of guild.members.cache.values()) {
         await processMember(member);
     }

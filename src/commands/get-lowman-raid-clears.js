@@ -21,7 +21,7 @@ module.exports = (destjs) => ({
             const nickname = member.nickname;
             const membership_details = await destjs.getMembershipDetailsFromBungieID(nickname);
     
-            const [{ membershipId: membership_id, membershipType: membership_type }] = membership_details
+            const [{ membershipId: membership_id, membershipType: membership_type }] = membership_details;
             const lowmanRaids = await destjs.getLowmanRaidClears(membership_type, membership_id);
             
             const clearCounts = {};

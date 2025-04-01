@@ -66,7 +66,6 @@ async function scheduledTasks() {
     logger.logInfo("Starting scheduled tasks");
     const guild = await discord.client.guilds.fetch(config.guildId);
     await guild.members.fetch();
-    console.log(guild.members.cache.values());
     for (const member of guild.members.cache.values()) {
         await processMember(member);
     }

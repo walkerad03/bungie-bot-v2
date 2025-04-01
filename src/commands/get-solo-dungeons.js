@@ -1,18 +1,18 @@
-const {SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const Logger = require('../modules/logger');
 
 var logger = new Logger();
 
 module.exports = (destjs) => ({
     data: new SlashCommandBuilder()
-    .setName('get-solo-dungeons-clears')
-    .setDescription('Return all of your solo dungeon clears')
-    .addUserOption((option) =>
-        option
-            .setName('target')
-            .setDescription('User to apply roles to')
-            .setRequired(true),
-    ),
+        .setName('get-solo-dungeons-clears')
+        .setDescription('Return all of your solo dungeon clears')
+        .addUserOption((option) =>
+            option
+                .setName('target')
+                .setDescription('User to apply roles to')
+                .setRequired(true),
+        ),
     async execute(interaction) {
         try {
             await interaction.deferReply();
@@ -20,10 +20,10 @@ module.exports = (destjs) => ({
             const member = interaction.guild.members.cache.get(target.id);
             const nickname = member.nickname;
             const membership_details = await destjs.getMembershipDetailsFromBungieID(nickname);
-    
+
             const [{ membershipId: membership_id, membershipType: membership_type }] = membership_details;
             const soloDungeons = await destjs.getSoloDungeonClears(membership_type, membership_id);
-    
+
             const clearCounts = {};
 
             soloDungeons.forEach(item => {

@@ -33,14 +33,14 @@ class DestJS {
         try {
             while (true) {
                 let res = await this.api.postGlobalName(bungieGlobalDisplayName, page);
-    
+
                 const searchResults = res.data.Response.searchResults;
-                
+
                 if (searchResults.length == 0) {
                     logger.logWarn(`No results found for ${bungie_id}. Skipping.`);
-                    return [{membershipId: null, membershipType: null}];
+                    return [{ membershipId: null, membershipType: null }];
                 }
-    
+
                 for (const item of searchResults) {
                     for (const membership of item.destinyMemberships) {
                         const code_to_check = membership.bungieGlobalDisplayNameCode;
@@ -52,17 +52,17 @@ class DestJS {
                         }
                     }
                 }
-    
+
                 if (!res.data.Response.hasMore) {
                     logger.logWarn(`No more pages found for ${bungie_id}. Skipping.`);
-                    return [{membershipId: null, membershipType: null}];
+                    return [{ membershipId: null, membershipType: null }];
                 }
-    
+
                 page += 1;
             }
         } catch (error) {
             logger.logError("Failed to search for membership details", error);
-            return [{membershipId: null, membershipType: null}];
+            return [{ membershipId: null, membershipType: null }];
         }
     }
 
@@ -74,7 +74,7 @@ class DestJS {
      */
     async getTimeSinceOnline(membership_type, membership_id) {
         const res = await this.api.getProfile(membership_type, membership_id, [100]);
-        
+
         const last_played = new Date(res.data.Response.profile.data.dateLastPlayed);
         const now = new Date();
 
@@ -142,7 +142,7 @@ class DestJS {
             let page = 0;
 
             while (true) {
-                const res = await this.api.getActivityHistory(membership_type, membership_id, character_id, page,"dungeon",250);
+                const res = await this.api.getActivityHistory(membership_type, membership_id, character_id, page, "dungeon", 250);
 
                 if (!('activities' in res.data.Response)) {
                     break;
@@ -156,7 +156,7 @@ class DestJS {
                     const player_count = activity.values.playerCount.basic.value;
                     const period = activity.period;
                     const director_activity_hash = activity.activityDetails.directorActivityHash;
-                    
+
                     if (completed == 1 && player_count == 1) {
                         const activity_definition = await this.api.GetActivityDefinition(director_activity_hash);
                         const pgcr = await this.api.getPGCR(activity.activityDetails.instanceId);
@@ -170,6 +170,54 @@ class DestJS {
                             deaths: deaths,
                             director_activity_hash: director_activity_hash,
                             period: period,
+                        });
+                    }
+                }
+
+                page++;
+            }
+        }
+
+        return results;
+    }
+
+    async getDungeonClears(membership_type, membership_id) {
+        const characters = await this.getCharacters(membership_type, membership_id);
+
+        let results = [];
+
+        for (const character_id of characters) {
+            let page = 0;
+
+            while (true) {
+                const res = await this.api.getActivityHistory(membership_type, membership_id, character_id, page, "dungeon", 250);
+
+                if (!('activities' in res.data.Response)) {
+                    break;
+                }
+
+                for (let i = 0; i < res.data.Response.activities.length; i++) {
+                    const activity = res.data.Response.activities[i];
+
+                    const deaths = activity.values.deaths.basic.value;
+                    const completed = activity.values.completed.basic.value;
+                    const period = activity.period;
+                    const director_activity_hash = activity.activityDetails.directorActivityHash;
+
+                    if (completed == 1) {
+                        const activity_definition = await this.api.GetActivityDefinition(director_activity_hash);
+                        const pgcr = await this.api.getPGCR(activity.activityDetails.instanceId);
+
+                        if (pgcr.data.Response.activityWasStartedFromBeginning == false) {
+                            continue;
+                        }
+
+                        results.push({
+                            activity_name: activity_definition.data.Response.displayProperties.name,
+                            deaths: deaths,
+                            director_activity_hash: director_activity_hash,
+                            period: period,
+                            time: activity,
                         });
                     }
                 }
@@ -204,11 +252,11 @@ class DestJS {
                     const player_count = activity.values.playerCount.basic.value;
                     const period = activity.period;
                     const director_activity_hash = activity.activityDetails.directorActivityHash;
-                    
+
                     if (completed == 1 && player_count <= 3) {
                         const activity_definition = await this.api.GetActivityDefinition(director_activity_hash);
                         const pgcr = await this.api.getPGCR(activity.activityDetails.instanceId);
-                        
+
                         if (pgcr.data.Response.activityWasStartedFromBeginning == false) {
                             continue;
                         }
@@ -305,7 +353,7 @@ class DestJS {
 
         let solo_dungeons = await this.getSoloDungeonClears(membership_type, membership_id);
         const lowman_raids = await this.getLowmanRaidClears(membership_type, membership_id);
-        
+
         lowman_raids.forEach(item => {
             if (item.player_count == 3) {
                 item.activity_name = `Trio ${item.activity_name}`;
